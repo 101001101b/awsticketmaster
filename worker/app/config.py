@@ -1,0 +1,21 @@
+import os
+
+
+class Config:
+    rabbitmq_host = os.environ.get("RABBITMQ_HOST", "localhost")
+    rabbitmq_port = int(os.environ.get("RABBITMQ_PORT", "5672"))
+    rabbitmq_user = os.environ.get("RABBITMQ_USER", "guest")
+    rabbitmq_pass = os.environ.get("RABBITMQ_PASS", "guest")
+    rabbitmq_queue = os.environ.get("RABBITMQ_QUEUE", "tickets.buy")
+    rabbitmq_prefetch = int(os.environ.get("RABBITMQ_PREFETCH", "10"))
+
+    postgres_host = os.environ.get("POSTGRES_HOST", "localhost")
+    postgres_port = int(os.environ.get("POSTGRES_PORT", "5432"))
+    postgres_db = os.environ.get("POSTGRES_DB", "ticketdb")
+    postgres_user = os.environ.get("POSTGRES_USER", "ticketapp")
+    postgres_pass = os.environ.get("POSTGRES_PASS", "password")
+    postgres_min_conn = int(os.environ.get("POSTGRES_MIN_CONN", "2"))
+    postgres_max_conn = int(os.environ.get("POSTGRES_MAX_CONN", "10"))
+
+    worker_id = os.environ.get("WORKER_ID", "unknown")
+    payment_delay_ms = int(os.environ.get("PAYMENT_DELAY_MS", "100"))
