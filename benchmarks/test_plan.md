@@ -5,7 +5,7 @@
 | Máquina | IP | Rol |
 |---|---|---|
 | **Local** | Tu PC | Terraform, AWS CLI, Docker build/push |
-| **Loadgen** | 10.0.1.70 | Ejecuta experimentos y cleanup |
+| **Loadgen** | 10.0.1.70 | Ejecuta benchmarks y cleanup |
 | **RabbitMQ** | 10.0.1.10 | Broker de mensajes |
 | **PostgreSQL** | 10.0.1.20 | Base de datos |
 | **Workers** | ECS Fargate | Procesan cola |
@@ -80,7 +80,7 @@ chmod +x run_all_benchmarks.sh
 ./run_all_benchmarks.sh
 ```
 
-El script ejecuta todos los tests en orden, hace cleanup entre runs, y guarda resultados en `results/`.
+El script ejecuta todos los tests en orden, hace cleanup entre runs, y guarda resultados en `benchmark_results/`.
 
 **Nota:** Para speedup, el script pausa y te pide escalar workers manualmente desde otra terminal.
 
@@ -109,9 +109,9 @@ for rate in 10 50 100; do
     --pg-password ddd \
     --rabbitmq-host 10.0.1.10
   
-  # Guardar resultados
-  mkdir -p results/calibration/rate_${rate}
-  cp results/*.csv results/calibration/rate_${rate}/
+  # Guardar resultados (archivo histórico)
+  mkdir -p benchmark_results/calibration/rate_${rate}
+  cp ../results/*.csv benchmark_results/calibration/rate_${rate}/
   
   sleep 10
 done
@@ -147,8 +147,8 @@ for workers in 1 2 4 8; do
     --rabbitmq-host 10.0.1.10
   
   # Guardar resultados
-  mkdir -p results/speedup/workers_${workers}
-  cp results/*.csv results/speedup/workers_${workers}/
+  mkdir -p benchmark_results/speedup/workers_${workers}
+  cp ../results/*.csv benchmark_results/speedup/workers_${workers}/
   
   sleep 15
 done
@@ -175,8 +175,8 @@ PYTHONPATH=../loadgen python3 run_experiment.py \
   --rabbitmq-host 10.0.1.10
 
 # Guardar
-mkdir -p results/stress/max_rate_1000
-cp results/*.csv results/stress/max_rate_1000/
+mkdir -p benchmark_results/stress/max_rate_1000
+cp ../results/*.csv benchmark_results/stress/max_rate_1000/
 ```
 
 #### D) Elasticidad (Z(t) completo, 2 runs)
@@ -203,8 +203,8 @@ for run in 1 2; do
     --rabbitmq-host 10.0.1.10
   
   # Guardar
-  mkdir -p results/elasticity/run_${run}
-  cp results/*.csv results/elasticity/run_${run}/
+  mkdir -p benchmark_results/elasticity/run_${run}
+  cp ../results/*.csv benchmark_results/elasticity/run_${run}/
   
   sleep 20
 done
@@ -225,8 +225,8 @@ PYTHONPATH=../loadgen python3 run_experiment.py \
   --pg-password ddd \
   --rabbitmq-host 10.0.1.10
 
-mkdir -p results/contention/uniform
-cp results/*.csv results/contention/uniform/
+mkdir -p benchmark_results/contention/uniform
+cp ../results/*.csv benchmark_results/contention/uniform/
 
 # Hotspot 80/5
 python3 cleanup.py --pg-host 10.0.1.20 --pg-user ticketapp --pg-password ddd
@@ -240,8 +240,8 @@ PYTHONPATH=../loadgen python3 run_experiment.py \
   --pg-password ddd \
   --rabbitmq-host 10.0.1.10
 
-mkdir -p results/contention/hotspot_80_5
-cp results/*.csv results/contention/hotspot_80_5/
+mkdir -p benchmark_results/contention/hotspot_80_5
+cp ../results/*.csv benchmark_results/contention/hotspot_80_5/
 ```
 
 ---
@@ -293,16 +293,16 @@ request_id=xxx result=sold
 
 ```bash
 # Desde loadgen (si usaste SCP)
-scp -r ec2-user@10.0.1.70:/home/ec2-user/awsticket/benchmarks/results/ ./results/
+scp -r ec2-user@10.0.1.70:/home/ec2-user/awsticket/benchmarks/benchmark_results/ ./benchmark_results/
 
 # O desde S3 si subiste
-aws s3 sync s3://awsticket-code/results/ ./results/
+aws s3 sync s3://awsticket-code/benchmark_results/ ./benchmark_results/
 ```
 
 ### Estructura de resultados
 
 ```
-results/
+benchmark_results/
 ├── calibration/
 │   ├── rate_10/
 │   │   ├── summary.csv
@@ -336,8 +336,8 @@ cd /root/urv/sd/awsticket/analysis
 # Instalar dependencias
 pip3 install matplotlib pandas
 
-# Generar plots
-python3 plot_results.py --input-dir ../benchmarks/results --output-dir ./plots
+# Generar plots (desde un benchmark específico)
+python3 plot_results.py --input-dir ../benchmarks/benchmark_results/calibration/rate_10 --output-dir ./plots
 ```
 
 ### Plots requeridos (Section 13 de specifications.txt)
@@ -345,17 +345,17 @@ python3 plot_results.py --input-dir ../benchmarks/results --output-dir ./plots
 1. **Throughput vs Workers** (speedup)
    - X: número de workers
    - Y: throughput total (msg/s)
-   - Datos: `results/speedup/workers_N/summary.csv`
+   - Datos: `benchmark_results/speedup/workers_N/summary.csv`
 
 2. **Queue backlog vs time** (elasticity)
    - X: tiempo (minutos)
    - Y: mensajes en cola + workers activos
-   - Datos: `results/elasticity/run_1/throughput_by_minute.csv`
+   - Datos: `benchmark_results/elasticity/run_1/throughput_by_minute.csv`
 
 3. **Latency percentiles** (todos los tests)
    - X: tipo de test
    - Y: latencia ms (p50, p95, p99)
-   - Datos: `results/*/summary.csv`
+   - Datos: `benchmark_results/*/summary.csv`
 
 ---
 
@@ -443,6 +443,6 @@ export AWS_DEFAULT_REGION="us-east-1"
 - [ ] PostgreSQL accesible desde loadgen
 - [ ] Dependencias instaladas en loadgen (`pika`, `psycopg2-binary`)
 - [ ] Tests ejecutados (calibration, speedup, stress, elasticity, contention)
-- [ ] Resultados guardados en `results/`
+- [ ] Resultados guardados en `benchmark_results/`
 - [ ] Plots generados
 - [ ] Report completado con análisis

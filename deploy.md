@@ -125,7 +125,7 @@ pip3 install pika psycopg2-binary
 sudo -u postgres psql -d ticketdb -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ticketapp;"
 
 # Ejecutar experimentos
-cd /path/to/awsticket/experiments
+cd /path/to/awsticket/benchmarks
 
 # A) Calibración
 PYTHONPATH=../loadgen python3 run_experiment.py \
