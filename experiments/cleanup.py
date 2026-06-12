@@ -2,16 +2,14 @@ import argparse
 import os
 import urllib.request
 import urllib.error
-
+import base64
 import psycopg2
-
 
 def purge_rabbitmq(host, user, password):
     queues = ["tickets.buy", "tickets.dlq"]
     for queue in queues:
         url = f"http://{host}:15672/api/queues/%2F/{queue}/contents"
         req = urllib.request.Request(url, method="DELETE")
-        import base64
         credentials = base64.b64encode(f"{user}:{password}".encode()).decode()
         req.add_header("Authorization", f"Basic {credentials}")
         try:
@@ -21,24 +19,25 @@ def purge_rabbitmq(host, user, password):
             print(f"RabbitMQ: failed to purge {queue} (HTTP {e.code})")
         except urllib.error.URLError as e:
             print(f"RabbitMQ: connection failed to {host}:15672 ({e.reason})")
-            return
+            return # Detiene RabbitMQ, pero ahora continuará en el main
     print("RabbitMQ: cleanup complete")
 
-
 def reset_postgres(host, port, db, user, password):
-    conn = psycopg2.connect(host=host, port=port, dbname=db, user=user, password=password)
-    with conn.cursor() as cur:
-        cur.execute("TRUNCATE processed CASCADE")
-        cur.execute("""
-            UPDATE seats
-            SET status = 'available', request_id = NULL, reserved_at = NULL, sold_at = NULL
-            WHERE status != 'available'
-        """)
-        cur.execute("UPDATE inventory SET sold = 0")
-    conn.commit()
-    conn.close()
-    print("PostgreSQL: cleanup complete")
-
+    try:
+        conn = psycopg2.connect(host=host, port=port, dbname=db, user=user, password=password, connect_timeout=5)
+        with conn.cursor() as cur:
+            cur.execute("TRUNCATE processed CASCADE")
+            cur.execute("""
+                UPDATE seats
+                SET status = 'available', request_id = NULL, reserved_at = NULL, sold_at = NULL
+                WHERE status != 'available'
+            """)
+            cur.execute("UPDATE inventory SET sold = 0")
+        conn.commit()
+        conn.close()
+        print("PostgreSQL: cleanup complete")
+    except Exception as e:
+        print(f"PostgreSQL: failed to cleanup. Error: {e}")
 
 def main():
     parser = argparse.ArgumentParser(description="Cleanup RabbitMQ and PostgreSQL before experiments")
@@ -53,10 +52,15 @@ def main():
     args = parser.parse_args()
 
     print("Cleaning environment...")
-    purge_rabbitmq(args.rabbitmq_host, args.rabbitmq_user, args.rabbitmq_password)
+    
+    try:
+        purge_rabbitmq(args.rabbitmq_host, args.rabbitmq_user, args.rabbitmq_password)
+    except Exception as e:
+        print(f"RabbitMQ critical error: {e}")
+        
     reset_postgres(args.pg_host, args.pg_port, args.pg_db, args.pg_user, args.pg_password)
+    
     print("Ready for next experiment")
-
 
 if __name__ == "__main__":
     main()
