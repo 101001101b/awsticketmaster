@@ -9,9 +9,13 @@ RABBITMQ_HOST="10.0.1.10"
 RABBITMQ_USER="admin"
 RABBITMQ_PASSWORD="ddd"
 
-RESULTS_DIR="./benchmark_results"
+RUN_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+RESULTS_DIR="./benchmark_results/${RUN_TIMESTAMP}"
 EXPORTS_DIR="../results"
 mkdir -p "$RESULTS_DIR"
+
+echo "Run timestamp: $RUN_TIMESTAMP"
+echo "Results will be saved to: $RESULTS_DIR"
 
 cleanup() {
     echo "=== Cleaning environment ==="
