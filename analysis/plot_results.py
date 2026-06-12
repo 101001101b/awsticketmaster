@@ -33,8 +33,8 @@ def plot_throughput_vs_workers(results_csv, summary_csv, output_dir):
         print("Skipping throughput vs workers: empty data")
         return
 
-    df["finish_ts"] = pd.to_datetime(df["finish_ts"])
-    df["enqueue_ts"] = pd.to_datetime(df["enqueue_ts"])
+    df["finish_ts"] = pd.to_datetime(df["finish_ts"], format='ISO8601')
+    df["enqueue_ts"] = pd.to_datetime(df["enqueue_ts"], format='ISO8601')
     df["finish_minute"] = df["finish_ts"].dt.floor("min")
     throughput_by_minute = df.groupby("finish_minute").size() / 60.0
 
@@ -88,8 +88,8 @@ def plot_backlog_vs_time(results_csv, output_dir):
         print("Skipping backlog plot: empty results")
         return
 
-    df["finish_ts"] = pd.to_datetime(df["finish_ts"])
-    df["enqueue_ts"] = pd.to_datetime(df["enqueue_ts"])
+    df["finish_ts"] = pd.to_datetime(df["finish_ts"], format='ISO8601')
+    df["enqueue_ts"] = pd.to_datetime(df["enqueue_ts"], format='ISO8601')
     df = df.sort_values("enqueue_ts")
 
     enqueued = df.groupby(df["enqueue_ts"].dt.floor("5s")).size().cumsum()
@@ -123,8 +123,8 @@ def plot_backlog_vs_time(results_csv, output_dir):
 def plot_latency_percentiles(results_csv, output_dir):
     """(c) Latency Percentiles (p50/p95/p99) over time"""
     df = pd.read_csv(results_csv)
-    df["finish_ts"] = pd.to_datetime(df["finish_ts"])
-    df["enqueue_ts"] = pd.to_datetime(df["enqueue_ts"])
+    df["finish_ts"] = pd.to_datetime(df["finish_ts"], format='ISO8601')
+    df["enqueue_ts"] = pd.to_datetime(df["enqueue_ts"], format='ISO8601')
     df["latency_ms"] = (df["finish_ts"] - df["enqueue_ts"]).dt.total_seconds() * 1000
     df = df[df["latency_ms"] > 0].copy()
 

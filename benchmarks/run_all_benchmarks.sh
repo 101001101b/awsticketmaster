@@ -10,7 +10,7 @@ RABBITMQ_USER="admin"
 RABBITMQ_PASSWORD="ddd"
 
 RESULTS_DIR="./benchmark_results"
-EXPORTS_DIR="./results"
+EXPORTS_DIR="../results"
 mkdir -p "$RESULTS_DIR"
 
 cleanup() {
