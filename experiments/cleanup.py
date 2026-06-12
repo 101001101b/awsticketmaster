@@ -26,7 +26,8 @@ def reset_postgres(host, port, db, user, password):
     try:
         conn = psycopg2.connect(host=host, port=port, dbname=db, user=user, password=password, connect_timeout=5)
         with conn.cursor() as cur:
-            cur.execute("TRUNCATE processed CASCADE")
+            cur.execute("DELETE FROM results")
+            cur.execute("DELETE FROM processed")
             cur.execute("""
                 UPDATE seats
                 SET status = 'available', request_id = NULL, reserved_at = NULL, sold_at = NULL
