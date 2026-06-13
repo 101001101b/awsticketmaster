@@ -86,9 +86,17 @@
 
 - ✅ 1. **Backlog entre runs** — Fix implementado (drain queue + --since/--until)
 - ✅ 2. **Cleanup se cuelga** — Fix implementado (--force mata conexiones + --retry)
-- ✅ 3. **Stress contaminado** — Fix implementado (--until + verify_clean)
-- 🟡 4. **Contención sin efecto** — Pendiente de verificar con nueva metodología
-- 🟢 5. **Plots con anotaciones** — Mejora estética, baja prioridad
+- ✅ 3. **Contaminación entre experimentos** — Fix implementado (--until + verify_clean + timestamps)
+- ✅ 4. **Contención** — Ratio 2.2× confirmado (hotspot vs uniforme). Válido.
+- ✅ 5. **Speedup** — **AHORA LIMPIO** (sesión 20260613_014350). Eficiencia 100%→79%.
+  - workers_1: 4.81 rps (p50=108ms)
+  - workers_2: 9.30 rps (p50=108ms)
+  - workers_4: 17.08 rps (p50=107ms)
+  - workers_8: 30.46 rps (p50=107ms)
+- 🟡 6. **Stress** — Ajustado: rampa 10→60 msg/s. Pendiente de re-ejecutar.
+- 🟡 7. **Elasticidad** — Ajustado: Z(t) 10→50 msg/s. Pendiente de re-ejecutar.
+- 🟡 8. **Contención** — Ajustado: 10→40 msg/s con --workers 4. Pendiente de re-ejecutar.
+- 🟢 9. **Plots con anotaciones** — Mejora estética, baja prioridad
 
 ---
 

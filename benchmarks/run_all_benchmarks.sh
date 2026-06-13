@@ -191,6 +191,7 @@ cleanup
 
 PYTHONPATH=../loadgen python3 run_experiment.py \
     --type contention \
+    --workers 4 \
     --hotspot-pct 100 \
     --hotspot-traffic 100 \
     --pg-host "$PG_HOST" \
@@ -209,6 +210,7 @@ cleanup
 
 PYTHONPATH=../loadgen python3 run_experiment.py \
     --type contention \
+    --workers 4 \
     --hotspot-pct 5 \
     --hotspot-traffic 80 \
     --pg-host "$PG_HOST" \

@@ -166,7 +166,7 @@ def experiment_speedup(args):
 def experiment_stress(args):
     """C) Stress: increasing load to find saturation point."""
     low_rate = args.min_rate if args.min_rate else 10
-    high_rate = args.max_rate if args.max_rate else 200
+    high_rate = args.max_rate if args.max_rate else 60
     experiment_start = datetime.now(timezone.utc).isoformat()
     log.info("=== Stress test: workers=%d rate=%d->%d (start=%s) ===", args.workers, low_rate, high_rate, experiment_start)
     run_loadgen({
@@ -198,7 +198,7 @@ def experiment_stress(args):
 def experiment_elasticity(args):
     """D) Elasticity: full Z(t) with autoscaling."""
     low_rate = args.elasticity_low if args.elasticity_low else 10
-    high_rate = args.elasticity_high if args.elasticity_high else 100
+    high_rate = args.elasticity_high if args.elasticity_high else 50
     experiment_start = datetime.now(timezone.utc).isoformat()
     log.info("=== Elasticity test: Z(t) low=%d high=%d (start=%s) ===", low_rate, high_rate, experiment_start)
     run_loadgen({
@@ -231,14 +231,16 @@ def experiment_contention(args):
     """E) Contention: uniform vs hotspot."""
     hotspot_pct = args.hotspot_pct
     hotspot_traffic = args.hotspot_traffic
+    low_rate = args.contention_low if args.contention_low else 10
+    high_rate = args.contention_high if args.contention_high else 40
     experiment_start = datetime.now(timezone.utc).isoformat()
-    log.info("=== Contention test: hotspot_pct=%.0f%%, traffic=%.0f%% (start=%s) ===", hotspot_pct, hotspot_traffic, experiment_start)
+    log.info("=== Contention test: hotspot_pct=%.0f%%, traffic=%.0f%% rate=%d->%d (start=%s) ===", hotspot_pct, hotspot_traffic, low_rate, high_rate, experiment_start)
     run_loadgen({
         "LOAD_MODE": "numbered",
         "LOAD_HOTSPOT_PCT_SEATS": str(hotspot_pct),
         "LOAD_HOTSPOT_PCT_TRAFFIC": str(hotspot_traffic),
-        "LOAD_LOW_RATE": "50",
-        "LOAD_HIGH_RATE": "300",
+        "LOAD_LOW_RATE": str(low_rate),
+        "LOAD_HIGH_RATE": str(high_rate),
         "LOAD_T1_LOW_S": "30",
         "LOAD_T2_RAMP_S": "30",
         "LOAD_T3_SPIKE_S": "0",
@@ -272,15 +274,19 @@ def main():
     parser.add_argument("--min-rate", type=int, default=0,
                         help="Starting rate for stress (0 = auto: 10 msg/s)")
     parser.add_argument("--max-rate", type=int, default=0,
-                        help="Peak rate for stress (0 = auto: 200 msg/s)")
+                        help="Peak rate for stress (0 = auto: 60 msg/s)")
     parser.add_argument("--workers-min", type=int, default=1)
     parser.add_argument("--workers-max", type=int, default=20)
     parser.add_argument("--elasticity-low", type=int, default=0,
                         help="Low rate for elasticity (0 = auto: 10 msg/s)")
     parser.add_argument("--elasticity-high", type=int, default=0,
-                        help="High rate for elasticity (0 = auto: 100 msg/s)")
+                        help="High rate for elasticity (0 = auto: 50 msg/s)")
     parser.add_argument("--hotspot-pct", type=float, default=5.0)
     parser.add_argument("--hotspot-traffic", type=float, default=80.0)
+    parser.add_argument("--contention-low", type=int, default=0,
+                        help="Low rate for contention (0 = auto: 10 msg/s)")
+    parser.add_argument("--contention-high", type=int, default=0,
+                        help="High rate for contention (0 = auto: 40 msg/s)")
     parser.add_argument("--drain-wait", type=int, default=120,
                         help="Max seconds to wait for RabbitMQ queue to drain after loadgen (default: 120)")
     parser.add_argument("--pg-host", default=os.environ.get("POSTGRES_HOST"))
