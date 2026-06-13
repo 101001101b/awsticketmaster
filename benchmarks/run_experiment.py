@@ -207,7 +207,7 @@ def experiment_elasticity(args):
         "LOAD_LOW_RATE": str(low_rate),
         "LOAD_HIGH_RATE": str(high_rate),
         "LOAD_T1_LOW_S": "60",
-        "LOAD_T2_RAMP_S": "180",
+        "LOAD_T2_RAMP_S": "600",
         "LOAD_T3_SPIKE_S": "30",
         "LOAD_T4_SUSTAINED_S": "120",
         "LOAD_T5_COOLDOWN_S": "60",

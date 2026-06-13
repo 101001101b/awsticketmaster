@@ -87,27 +87,32 @@ save_results() {
 
 BASE_OPTS="--pg-host $PG_HOST --pg-user $PG_USER --pg-password $PG_PASSWORD --rabbitmq-host $RABBITMQ_HOST --rabbitmq-user $RABBITMQ_USER --rabbitmq-password $RABBITMQ_PASSWORD"
 
-# ===== 1) STRESS (rampa 10->80, 8 workers) =====
+# ===== 1) STRESS (rampa 10->80, 8 workers, autoscaler OFF) =====
 echo ""
 echo "=========================================="
 echo "1/5 STRESS - ramp 10->80, 8 workers"
 echo "=========================================="
+echo "Desactivando autoscaler para evitar que interfiera..."
+aws events disable-rule --name awsticket-scaling-schedule --region "$AWS_REGION" 2>/dev/null || true
+sleep 5
 scale_workers 8
 cleanup
 PYTHONPATH=../loadgen python3 run_experiment.py --type stress --workers 8 $BASE_OPTS
 save_results "stress" "max_rate_80"
+echo "Reactivando autoscaler..."
+aws events enable-rule --name awsticket-scaling-schedule --region "$AWS_REGION" 2>/dev/null || true
 
-# ===== 2) ELASTICITY run 1 (Z(t) 10->50, min 4 workers, ramp 180s) =====
+# ===== 2) ELASTICITY run 1 (Z(t) 10->50, min 4 workers, ramp 600s) =====
 echo ""
 echo "=========================================="
-echo "2/5 ELASTICITY run 1 - Z(t) 10->50, min 4 workers, ramp 180s"
+echo "2/5 ELASTICITY run 1 - Z(t) 10->50, min 4 workers, ramp 600s"
 echo "=========================================="
 scale_workers 4
 cleanup
 PYTHONPATH=../loadgen python3 run_experiment.py --type elasticity --workers-min 4 --workers-max 20 $BASE_OPTS
 save_results "elasticity" "run_1"
 
-# ===== 3) ELASTICITY run 2 (rampa 180s, min 4 workers) =====
+# ===== 3) ELASTICITY run 2 (rampa 600s, min 4 workers) =====
 echo ""
 echo "=========================================="
 echo "3/5 ELASTICITY run 2 - Z(t) 10->50, min 4 workers"

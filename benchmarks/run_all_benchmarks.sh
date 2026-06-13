@@ -130,16 +130,21 @@ for workers in 1 2 4 8; do
 done
 
 # ==========================================
-# C) STRESS (4 workers)
+# C) STRESS (8 workers, autoscaler OFF)
 # ==========================================
 echo ""
 echo "=========================================="
 echo "C) STRESS - Finding saturation point"
 echo "=========================================="
+echo "Desactivando autoscaler para stress..."
+aws events disable-rule --name awsticket-scaling-schedule --region "$AWS_REGION" 2>/dev/null || true
+sleep 5
 scale_workers 8
 cleanup
 PYTHONPATH=../loadgen python3 run_experiment.py --type stress --workers 8 $BASE_OPTS
 save_results "stress" "max_rate_80"
+echo "Reactivando autoscaler..."
+aws events enable-rule --name awsticket-scaling-schedule --region "$AWS_REGION" 2>/dev/null || true
 
 # ==========================================
 # D) ELASTICITY (autoscaling 1->20)
