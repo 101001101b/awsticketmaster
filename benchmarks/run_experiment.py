@@ -275,7 +275,7 @@ def main():
     parser.add_argument("--min-rate", type=int, default=0,
                         help="Starting rate for stress (0 = auto: 10 msg/s)")
     parser.add_argument("--max-rate", type=int, default=0,
-                        help="Peak rate for stress (0 = auto: 80 msg/s)")
+                        help="Peak rate for stress (0 = auto: 60 msg/s)")
     parser.add_argument("--workers-min", type=int, default=1)
     parser.add_argument("--workers-max", type=int, default=20)
     parser.add_argument("--elasticity-low", type=int, default=0,

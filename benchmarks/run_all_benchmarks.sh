@@ -142,7 +142,7 @@ sleep 5
 scale_workers 8
 cleanup
 PYTHONPATH=../loadgen python3 run_experiment.py --type stress --workers 8 $BASE_OPTS
-save_results "stress" "max_rate_80"
+save_results "stress" "max_rate_60"
 echo "Reactivando autoscaler..."
 aws events enable-rule --name awsticket-scaling-schedule --region "$AWS_REGION" 2>/dev/null || true
 

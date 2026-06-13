@@ -87,10 +87,10 @@ save_results() {
 
 BASE_OPTS="--pg-host $PG_HOST --pg-user $PG_USER --pg-password $PG_PASSWORD --rabbitmq-host $RABBITMQ_HOST --rabbitmq-user $RABBITMQ_USER --rabbitmq-password $RABBITMQ_PASSWORD"
 
-# ===== 1) STRESS (rampa 10->80, 8 workers, autoscaler OFF) =====
+# ===== 1) STRESS (rampa 10->60, 8 workers, autoscaler OFF) =====
 echo ""
 echo "=========================================="
-echo "1/5 STRESS - ramp 10->80, 8 workers"
+echo "1/5 STRESS - ramp 10->60, 8 workers"
 echo "=========================================="
 echo "Desactivando autoscaler para evitar que interfiera..."
 aws events disable-rule --name awsticket-scaling-schedule --region "$AWS_REGION" 2>/dev/null || true
@@ -98,7 +98,7 @@ sleep 5
 scale_workers 8
 cleanup
 PYTHONPATH=../loadgen python3 run_experiment.py --type stress --workers 8 $BASE_OPTS
-save_results "stress" "max_rate_80"
+save_results "stress" "max_rate_60"
 echo "Reactivando autoscaler..."
 aws events enable-rule --name awsticket-scaling-schedule --region "$AWS_REGION" 2>/dev/null || true
 

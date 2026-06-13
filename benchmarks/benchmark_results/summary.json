@@ -1,5 +1,5 @@
 {
-  "collected_at": "2026-06-13T09:33:44.012735",
+  "collected_at": "2026-06-13T10:46:40.273631",
   "input_dir": "./benchmark_results",
   "experiments": {
     "calibration": {
@@ -738,6 +738,141 @@
           "summary": "./benchmark_results/20260613_064029/contention/uniform/summary.csv",
           "throughput_by_minute": "./benchmark_results/20260613_064029/contention/uniform/throughput_by_minute.csv",
           "processed": "./benchmark_results/20260613_064029/contention/uniform/processed.csv"
+        }
+      },
+      "hotspot_80_5@20260613_074756": {
+        "metrics": {
+          "total_requests": 5050,
+          "sold": 3751,
+          "rejected": 1299,
+          "sold_out": 0,
+          "success_rate": 74.27722772277228,
+          "latency": {
+            "min_ms": 105.43,
+            "max_ms": 169.49,
+            "avg_ms": 107.75,
+            "p50_ms": 107.45,
+            "p95_ms": 109.31,
+            "p99_ms": 117.86
+          },
+          "duration_s": 209.26,
+          "throughput_rps": 17.93
+        },
+        "summary": [
+          {
+            "outcome": "rejected",
+            "count": "1299",
+            "avg_latency_ms": "106.9047844495765974",
+            "p50_ms": "106.53",
+            "p95_ms": "107.9426",
+            "p99_ms": "113.93409999999996"
+          },
+          {
+            "outcome": "sold",
+            "count": "3751",
+            "avg_latency_ms": "108.0380930418555052",
+            "p50_ms": "107.626",
+            "p95_ms": "109.57700000000001",
+            "p99_ms": "118.37500000000001"
+          }
+        ],
+        "throughput_by_minute": [
+          {
+            "minute": "2026-06-13 08:39:00+00:00",
+            "requests": "173",
+            "sold": "172"
+          },
+          {
+            "minute": "2026-06-13 08:40:00+00:00",
+            "requests": "1255",
+            "sold": "1133"
+          },
+          {
+            "minute": "2026-06-13 08:41:00+00:00",
+            "requests": "1800",
+            "sold": "1332"
+          },
+          {
+            "minute": "2026-06-13 08:42:00+00:00",
+            "requests": "1669",
+            "sold": "1029"
+          },
+          {
+            "minute": "2026-06-13 08:43:00+00:00",
+            "requests": "153",
+            "sold": "85"
+          }
+        ],
+        "files": {
+          "results": "./benchmark_results/20260613_074756/contention/hotspot_80_5/results.csv",
+          "summary": "./benchmark_results/20260613_074756/contention/hotspot_80_5/summary.csv",
+          "throughput_by_minute": "./benchmark_results/20260613_074756/contention/hotspot_80_5/throughput_by_minute.csv",
+          "processed": "./benchmark_results/20260613_074756/contention/hotspot_80_5/processed.csv"
+        }
+      },
+      "uniform@20260613_074756": {
+        "metrics": {
+          "total_requests": 5050,
+          "sold": 4907,
+          "rejected": 143,
+          "sold_out": 0,
+          "success_rate": 97.16831683168317,
+          "latency": {
+            "min_ms": 105.59,
+            "max_ms": 170.21,
+            "avg_ms": 107.99,
+            "p50_ms": 107.59,
+            "p95_ms": 109.41,
+            "p99_ms": 119.98
+          },
+          "duration_s": 209.26,
+          "throughput_rps": 23.45
+        },
+        "summary": [
+          {
+            "outcome": "rejected",
+            "count": "143",
+            "avg_latency_ms": "106.7371258741258741",
+            "p50_ms": "106.55499999999999",
+            "p95_ms": "108.2937",
+            "p99_ms": "110.03656000000001"
+          },
+          {
+            "outcome": "sold",
+            "count": "4907",
+            "avg_latency_ms": "108.0267962094966375",
+            "p50_ms": "107.609",
+            "p95_ms": "109.4701",
+            "p99_ms": "120.58517999999974"
+          }
+        ],
+        "throughput_by_minute": [
+          {
+            "minute": "2026-06-13 08:36:00+00:00",
+            "requests": "763",
+            "sold": "761"
+          },
+          {
+            "minute": "2026-06-13 08:37:00+00:00",
+            "requests": "1792",
+            "sold": "1754"
+          },
+          {
+            "minute": "2026-06-13 08:38:00+00:00",
+            "requests": "1800",
+            "sold": "1727"
+          },
+          {
+            "minute": "2026-06-13 08:39:00+00:00",
+            "requests": "695",
+            "sold": "665"
+          }
+        ],
+        "files": {
+          "results": "./benchmark_results/20260613_074756/contention/uniform/results.csv",
+          "summary": "./benchmark_results/20260613_074756/contention/uniform/summary.csv",
+          "throughput_by_minute": "./benchmark_results/20260613_074756/contention/uniform/throughput_by_minute.csv",
+          "processed": "./benchmark_results/20260613_074756/contention/uniform/processed.csv"
         }
       }
     },
@@ -1561,6 +1696,296 @@
           "throughput_by_minute": "./benchmark_results/20260613_064029/elasticity/run_2/throughput_by_minute.csv",
           "processed": "./benchmark_results/20260613_064029/elasticity/run_2/processed.csv"
         }
+      },
+      "run_1@20260613_074756": {
+        "metrics": {
+          "total_requests": 35996,
+          "sold": 11975,
+          "rejected": 24021,
+          "sold_out": 0,
+          "success_rate": 33.267585287254136,
+          "latency": {
+            "min_ms": 105.3,
+            "max_ms": 391247.3,
+            "avg_ms": 102917.96,
+            "p50_ms": 27109.17,
+            "p95_ms": 350125.43,
+            "p99_ms": 383088.5
+          },
+          "duration_s": 1138.48,
+          "throughput_rps": 10.52
+        },
+        "summary": [
+          {
+            "outcome": "rejected",
+            "count": "24044",
+            "avg_latency_ms": "123409.801334095824",
+            "p50_ms": "75829.35650000001",
+            "p95_ms": "357771.64939999994",
+            "p99_ms": "385203.07112"
+          },
+          {
+            "outcome": "sold",
+            "count": "11977",
+            "avg_latency_ms": "62382.733341654838",
+            "p50_ms": "131.639",
+            "p95_ms": "324772.84459999966",
+            "p99_ms": "377399.56468"
+          }
+        ],
+        "throughput_by_minute": [
+          {
+            "minute": "2026-06-13 07:53:00+00:00",
+            "requests": "150",
+            "sold": "148"
+          },
+          {
+            "minute": "2026-06-13 07:54:00+00:00",
+            "requests": "633",
+            "sold": "595"
+          },
+          {
+            "minute": "2026-06-13 07:55:00+00:00",
+            "requests": "844",
+            "sold": "720"
+          },
+          {
+            "minute": "2026-06-13 07:56:00+00:00",
+            "requests": "1085",
+            "sold": "839"
+          },
+          {
+            "minute": "2026-06-13 07:57:00+00:00",
+            "requests": "1325",
+            "sold": "886"
+          },
+          {
+            "minute": "2026-06-13 07:58:00+00:00",
+            "requests": "1565",
+            "sold": "904"
+          },
+          {
+            "minute": "2026-06-13 07:59:00+00:00",
+            "requests": "1804",
+            "sold": "862"
+          },
+          {
+            "minute": "2026-06-13 08:00:00+00:00",
+            "requests": "2045",
+            "sold": "843"
+          },
+          {
+            "minute": "2026-06-13 08:01:00+00:00",
+            "requests": "2244",
+            "sold": "779"
+          },
+          {
+            "minute": "2026-06-13 08:02:00+00:00",
+            "requests": "2264",
+            "sold": "671"
+          },
+          {
+            "minute": "2026-06-13 08:03:00+00:00",
+            "requests": "2266",
+            "sold": "594"
+          },
+          {
+            "minute": "2026-06-13 08:04:00+00:00",
+            "requests": "2266",
+            "sold": "570"
+          },
+          {
+            "minute": "2026-06-13 08:05:00+00:00",
+            "requests": "2261",
+            "sold": "473"
+          },
+          {
+            "minute": "2026-06-13 08:06:00+00:00",
+            "requests": "2266",
+            "sold": "485"
+          },
+          {
+            "minute": "2026-06-13 08:07:00+00:00",
+            "requests": "2267",
+            "sold": "482"
+          },
+          {
+            "minute": "2026-06-13 08:08:00+00:00",
+            "requests": "2268",
+            "sold": "484"
+          },
+          {
+            "minute": "2026-06-13 08:09:00+00:00",
+            "requests": "2270",
+            "sold": "468"
+          },
+          {
+            "minute": "2026-06-13 08:10:00+00:00",
+            "requests": "2260",
+            "sold": "418"
+          },
+          {
+            "minute": "2026-06-13 08:11:00+00:00",
+            "requests": "2269",
+            "sold": "430"
+          },
+          {
+            "minute": "2026-06-13 08:12:00+00:00",
+            "requests": "1670",
+            "sold": "326"
+          }
+        ],
+        "files": {
+          "results": "./benchmark_results/20260613_074756/elasticity/run_1/results.csv",
+          "summary": "./benchmark_results/20260613_074756/elasticity/run_1/summary.csv",
+          "throughput_by_minute": "./benchmark_results/20260613_074756/elasticity/run_1/throughput_by_minute.csv",
+          "processed": "./benchmark_results/20260613_074756/elasticity/run_1/processed.csv"
+        }
+      },
+      "run_2@20260613_074756": {
+        "metrics": {
+          "total_requests": 36026,
+          "sold": 12037,
+          "rejected": 23989,
+          "sold_out": 0,
+          "success_rate": 33.411980236495864,
+          "latency": {
+            "min_ms": 105.2,
+            "max_ms": 390897.9,
+            "avg_ms": 102450.43,
+            "p50_ms": 27047.41,
+            "p95_ms": 349960.78,
+            "p99_ms": 382716.59
+          },
+          "duration_s": 1139.27,
+          "throughput_rps": 10.57
+        },
+        "summary": [
+          {
+            "outcome": "rejected",
+            "count": "24011",
+            "avg_latency_ms": "123071.000027320811",
+            "p50_ms": "75785.799",
+            "p95_ms": "357341.73799999995",
+            "p99_ms": "384893.6461"
+          },
+          {
+            "outcome": "sold",
+            "count": "12039",
+            "avg_latency_ms": "61899.646166375945",
+            "p50_ms": "120.05399999999999",
+            "p95_ms": "322790.0337",
+            "p99_ms": "377088.40150000015"
+          }
+        ],
+        "throughput_by_minute": [
+          {
+            "minute": "2026-06-13 08:14:00+00:00",
+            "requests": "64",
+            "sold": "64"
+          },
+          {
+            "minute": "2026-06-13 08:15:00+00:00",
+            "requests": "613",
+            "sold": "589"
+          },
+          {
+            "minute": "2026-06-13 08:16:00+00:00",
+            "requests": "807",
+            "sold": "702"
+          },
+          {
+            "minute": "2026-06-13 08:17:00+00:00",
+            "requests": "1047",
+            "sold": "817"
+          },
+          {
+            "minute": "2026-06-13 08:18:00+00:00",
+            "requests": "1287",
+            "sold": "877"
+          },
+          {
+            "minute": "2026-06-13 08:19:00+00:00",
+            "requests": "1527",
+            "sold": "920"
+          },
+          {
+            "minute": "2026-06-13 08:20:00+00:00",
+            "requests": "1767",
+            "sold": "892"
+          },
+          {
+            "minute": "2026-06-13 08:21:00+00:00",
+            "requests": "2007",
+            "sold": "805"
+          },
+          {
+            "minute": "2026-06-13 08:22:00+00:00",
+            "requests": "2230",
+            "sold": "820"
+          },
+          {
+            "minute": "2026-06-13 08:23:00+00:00",
+            "requests": "2264",
+            "sold": "643"
+          },
+          {
+            "minute": "2026-06-13 08:24:00+00:00",
+            "requests": "2264",
+            "sold": "640"
+          },
+          {
+            "minute": "2026-06-13 08:25:00+00:00",
+            "requests": "2268",
+            "sold": "555"
+          },
+          {
+            "minute": "2026-06-13 08:26:00+00:00",
+            "requests": "2267",
+            "sold": "521"
+          },
+          {
+            "minute": "2026-06-13 08:27:00+00:00",
+            "requests": "2267",
+            "sold": "514"
+          },
+          {
+            "minute": "2026-06-13 08:28:00+00:00",
+            "requests": "2268",
+            "sold": "501"
+          },
+          {
+            "minute": "2026-06-13 08:29:00+00:00",
+            "requests": "2269",
+            "sold": "471"
+          },
+          {
+            "minute": "2026-06-13 08:30:00+00:00",
+            "requests": "2265",
+            "sold": "452"
+          },
+          {
+            "minute": "2026-06-13 08:31:00+00:00",
+            "requests": "2271",
+            "sold": "429"
+          },
+          {
+            "minute": "2026-06-13 08:32:00+00:00",
+            "requests": "2271",
+            "sold": "418"
+          },
+          {
+            "minute": "2026-06-13 08:33:00+00:00",
+            "requests": "2028",
+            "sold": "409"
+          }
+        ],
+        "files": {
+          "results": "./benchmark_results/20260613_074756/elasticity/run_2/results.csv",
+          "summary": "./benchmark_results/20260613_074756/elasticity/run_2/summary.csv",
+          "throughput_by_minute": "./benchmark_results/20260613_074756/elasticity/run_2/throughput_by_minute.csv",
+          "processed": "./benchmark_results/20260613_074756/elasticity/run_2/processed.csv"
+        }
       }
     },
     "speedup": {
@@ -2135,6 +2560,81 @@
           "throughput_by_minute": "./benchmark_results/20260613_064029/stress/max_rate_80/throughput_by_minute.csv",
           "processed": "./benchmark_results/20260613_064029/stress/max_rate_80/processed.csv"
         }
+      },
+      "max_rate_80@20260613_074756": {
+        "metrics": {
+          "total_requests": 15540,
+          "sold": 7620,
+          "rejected": 7920,
+          "sold_out": 0,
+          "success_rate": 49.034749034749034,
+          "latency": {
+            "min_ms": 105.34,
+            "max_ms": 46704.31,
+            "avg_ms": 20808.68,
+            "p50_ms": 21407.23,
+            "p95_ms": 44720.18,
+            "p99_ms": 46307.64
+          },
+          "duration_s": 293.15,
+          "throughput_rps": 25.99
+        },
+        "summary": [
+          {
+            "outcome": "rejected",
+            "count": "7920",
+            "avg_latency_ms": "26935.598002398990",
+            "p50_ms": "31915.495",
+            "p95_ms": "45217.949049999996",
+            "p99_ms": "46411.805960000005"
+          },
+          {
+            "outcome": "sold",
+            "count": "7620",
+            "avg_latency_ms": "14440.534709973753",
+            "p50_ms": "4698.412499999999",
+            "p95_ms": "43734.461249999986",
+            "p99_ms": "46095.742379999996"
+          }
+        ],
+        "throughput_by_minute": [
+          {
+            "minute": "2026-06-13 07:48:00+00:00",
+            "requests": "320",
+            "sold": "312"
+          },
+          {
+            "minute": "2026-06-13 07:49:00+00:00",
+            "requests": "1490",
+            "sold": "1293"
+          },
+          {
+            "minute": "2026-06-13 07:50:00+00:00",
+            "requests": "3030",
+            "sold": "2062"
+          },
+          {
+            "minute": "2026-06-13 07:51:00+00:00",
+            "requests": "4523",
+            "sold": "2122"
+          },
+          {
+            "minute": "2026-06-13 07:52:00+00:00",
+            "requests": "4527",
+            "sold": "1419"
+          },
+          {
+            "minute": "2026-06-13 07:53:00+00:00",
+            "requests": "1650",
+            "sold": "412"
+          }
+        ],
+        "files": {
+          "results": "./benchmark_results/20260613_074756/stress/max_rate_80/results.csv",
+          "summary": "./benchmark_results/20260613_074756/stress/max_rate_80/summary.csv",
+          "throughput_by_minute": "./benchmark_results/20260613_074756/stress/max_rate_80/throughput_by_minute.csv",
+          "processed": "./benchmark_results/20260613_074756/stress/max_rate_80/processed.csv"
+        }
       }
     }
   },
@@ -2159,9 +2659,9 @@
       ]
     },
     "contention": {
-      "num_runs": 8,
-      "total_requests": 81217,
-      "total_sold": 59035,
+      "num_runs": 10,
+      "total_requests": 91317,
+      "total_sold": 67693,
       "runs": [
         {
           "name": "hotspot_80_5@20260613_014350",
@@ -2194,13 +2694,21 @@
         {
           "name": "uniform@20260613_064029",
           "timestamp": "20260613_064029"
+        },
+        {
+          "name": "hotspot_80_5@20260613_074756",
+          "timestamp": "20260613_074756"
+        },
+        {
+          "name": "uniform@20260613_074756",
+          "timestamp": "20260613_074756"
         }
       ]
     },
     "elasticity": {
-      "num_runs": 8,
-      "total_requests": 179858,
-      "total_sold": 70290,
+      "num_runs": 10,
+      "total_requests": 251880,
+      "total_sold": 94302,
       "runs": [
         {
           "name": "run_1@20260613_014350",
@@ -2233,6 +2741,14 @@
         {
           "name": "run_2@20260613_064029",
           "timestamp": "20260613_064029"
+        },
+        {
+          "name": "run_1@20260613_074756",
+          "timestamp": "20260613_074756"
+        },
+        {
+          "name": "run_2@20260613_074756",
+          "timestamp": "20260613_074756"
         }
       ]
     },
@@ -2260,9 +2776,9 @@
       ]
     },
     "stress": {
-      "num_runs": 4,
-      "total_requests": 69325,
-      "total_sold": 31930,
+      "num_runs": 5,
+      "total_requests": 84865,
+      "total_sold": 39550,
       "runs": [
         {
           "name": "max_rate_1000@20260613_014350",
@@ -2279,6 +2795,10 @@
         {
           "name": "max_rate_80@20260613_064029",
           "timestamp": "20260613_064029"
+        },
+        {
+          "name": "max_rate_80@20260613_074756",
+          "timestamp": "20260613_074756"
         }
       ]
     }
