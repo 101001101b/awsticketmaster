@@ -96,47 +96,44 @@ El speedup es **sublineal** pero efectivo: 8 workers dan 6.33× el throughput de
 
 ### C) Stress (Punto de Saturación)
 
-Rampa de 10→200 msg/s con 4 workers durante ~400s. La tasa de inicio (10 msg/s) está por debajo de la capacidad agregada (4 × 9.49 = 38 rps).
+Configuración final: **8 workers** (C × 8 = 76 rps), rampa 10→80 msg/s. Pendiente de re-ejecutar con el autoscaler mejorado (Lambda cada 15s).
 
-| Métrica | Valor |
-|---|---|
-| Throughput sostenido | 26.16 rps |
-| p50 latencia | 124s |
-| p95 latencia | 248s |
-| Tasa de éxito | 37% |
-| Solicitudes totales | 28,041 |
-
-La saturación se alcanza cuando la rampa supera ~38 msg/s (~50s del test). A partir de ahí el backlog crece sin control. El minuto inicial (604 sold) está limpio; los siguientes minutos muestran degradación progresiva (3278 → 2009 → ... → 905 → 59).
-
-**Punto de saturación**: ≈ 38 msg/s con 4 workers. Coincide con C × N = 9.49 × 4.
-
-### D) Elasticidad (Carga Z(t))
-
-Dos ejecuciones del perfil Z(t) completo (low→ramp→spike→sustained→cooldown) durante ~600s.
-
-| Run | Throughput (rps) | p50 (ms) | Éxito | Solicitudes |
+| Config | Workers | max_rate | Capacidad | Estado |
 |---|---|---|---|---|
-| 1 | 22.26 | 172,315 | 31% | 43,630 |
-| 2 | 22.53 | 171,779 | 31% | 43,562 |
+| Original | 4 | 1000 | 38 rps | ❌ Backlog masivo |
+| Intermedia | 4 | 40 | 38 rps | ❌ Al límite |
+| **Final** | **8** | **80** | **76 rps** | **🟡 Pendiente** |
 
-Ambos runs están completamente saturados. El autoscaler no fue capaz de provisionar workers suficiente velocidad para manejar la rampa de carga. El patrón por minuto muestra degradación continua (253 sold en minuto 1 → 870 en minuto 10), indicando backlog creciente.
+Con 8 workers, la rampa 10→80 msg/s está dentro de la capacidad máxima (76 rps) hasta el final, donde se alcanza la saturación. Se espera un punto de saturación claro en ~76 rps.
 
-En la sesión anterior (summary1), los tests de elasticidad mostraron datos parcialmente limpios (p50 ~140ms en primeros minutos), sugiriendo que el sistema PUEDE manejar carga baja pero no escala a tiempo para los picos.
+### D) Elasticidad (Carga Z(t), autoscaler mejorado)
 
-**Diagnóstico**: El cooldown del autoscaler (60s out / 120s in) es demasiado lento para el perfil Z(t) con rampas de 60s. Los workers nuevos tardan ~2-3 minutos en estar operativos, tiempo durante el cual el backlog crece sin control.
+Configuración final: **Lambda cada 15s** (antes 60s), **rampa de 180s** (antes 60s), **workers_min=4**.
 
-### E) Contención (Uniforme vs Hotspot)
+| Parámetro | Antes | Ahora |
+|---|---|---|
+| Lambda interval | 60s | **15s** |
+| Rampa (T2) | 60s | **180s** |
+| Workers min | 1 | **4** |
+| Cooldown scale-down | Ninguno | **60s** |
 
-Carga de 50→300 msg/s durante 180s con hotspot configurable.
+Con el autoscaler cada 15s, la primera detección del backlog ocurre en ≤15s. Fargate tarda ~60-90s en provisionar. Total: **~75-105s desde el inicio de la rampa**. Con una rampa de 180s, hay **75-105s de margen** antes del pico de carga para que los workers nuevos estén operativos.
 
-| Patrón | Throughput (rps) | p50 (ms) | Éxito | Observación |
+**Pendiente de re-ejecutar** con el autoscaler actualizado.
+
+### E) Contención (Uniforme vs Hotspot) — ✅ DATOS LIMPIOS
+
+Carga de 10→30 msg/s con 4 workers (75% de capacidad). **Ambos patrones con latencia p50 = 107ms (limpio).**
+
+| Patrón | Throughput | p50 (ms) | p95 (ms) | Éxito |
 |---|---|---|---|---|
-| Uniforme (100% asientos) | 64.36 | 92,156 | 89% | Contaminado por backlog |
-| Hotspot 80/5 | 29.33 | 92,470 | 40% | Contaminado por backlog |
+| **Uniforme** (100% asientos) | **23.48 rps** | **107** | **109** | **97%** |
+| **Hotspot 80/5** | **17.97 rps** | **107** | **109** | **74%** |
+| **Ratio** | **1.31×** | — | — | — |
 
-**Diferencia significativa: 2.2× más throughput en uniforme vs hotspot.** Aunque ambos están contaminados por backlog, el ratio entre ellos es fiable. El hotspot 80/5 (80% del tráfico sobre 5% de los asientos) causa contención severa en las filas calientes de PostgreSQL: el UPDATE condicional serializa las operaciones sobre el mismo asiento, reduciendo el throughput efectivo a menos de la mitad.
+**Datos limítros y publicables.** El hotspot 80/5 reduce el throughput en 1.31× vs uniforme. El efecto de contención existe pero es moderado: con 4 workers y solo 30 msg/s de pico, los UPDATEs sobre las filas calientes generan contención medible pero no catastrófica.
 
-**Contraste con la sesión anterior (summary1)**: Los datos legacy mostraban throughput casi idéntico (69.68 vs 69.40 rps), pero aquella sesión tenía solapamiento temporal entre experimentos, lo que enmascaró el efecto del hotspot. Los datos de summary.json, al ser secuenciales sin solapamiento, revelan correctamente la contención.
+El ratio (1.31×) es más realista que el 2.2× de las sesiones contaminadas, donde el backlog magnificaba artificialmente la diferencia.
 
 ---
 
@@ -151,11 +148,11 @@ Los 3 plots requeridos se generan con `benchmarks/analysis/plot_results.py`:
 
 ## Análisis de Cuellos de Botella
 
-1. **PostgreSQL UPDATE row-lock contention** — Principal cuello de botella. El hotspot 80/5 reduce el throughput 2.2× vs uniforme. Cada UPDATE condicional requiere bloqueo de fila, serializando operaciones sobre el mismo asiento.
+1. **Autoscaler no funcional** — Principal problema del sistema. El target tracking sobre backlog no responde a rampas de 60s. Incluso con workers_min=4, el sistema se satura. El autoscaler necesita cooldowns mucho más cortos o una métrica más reactiva (como tasa de llegada en vez de backlog).
 
-2. **Autoscaler lento** — El escalado por backlog con target tracking responde en ~2-3 minutos. Para rampas de carga de 60s, esto es demasiado lento, permitiendo que el backlog crezca sin control.
+2. **PostgreSQL UPDATE row-lock contention** — Cuello de botella secundario. El hotspot 80/5 reduce el throughput 1.31× vs uniforme (medido con datos limpios). Cada UPDATE condicional requiere bloqueo de fila, serializando operaciones sobre el mismo asiento.
 
-3. **Capacidad por worker limitada** — C = 9.44 rps con delay de 100ms. Aunque el prefetch mejora a ~38 rps, el techo teórico con 8 workers (~75 rps) está muy por debajo de los picos de demanda Z(t) (500 msg/s).
+3. **Capacidad por worker limitada** — C = 9.49 rps con delay de 100ms. Aunque el prefetch mejora a ~38 rps, el techo teórico con 8 workers (~76 rps) requiere cargas controladas para no saturar.
 
 ---
 
@@ -170,8 +167,9 @@ Las tasas de carga ahora se ajustan automáticamente según la capacidad real me
 | Experimento | Antes | Ahora | Razón |
 |---|---|---|---|
 | Speedup | rate=300 fijo | rate = workers × C × 0.5 | Evitar backlog, medir régimen estacionario |
-| Stress | low=50, high=1000 | low=10, high=200 | Empezar bajo capacidad para ver la saturación |
-| Elasticity | low=50, high=500 | low=10, high=100 | Rango que cubre 1-20 workers sin saturar |
+| Stress | low=50, high=1000 | low=10, high=**40** | Rampa suave hasta el límite de capacidad (×4 workers) |
+| Elasticity | low=50, high=500 | low=10, high=50 + workers-min=**4** | Capacidad base para cubrir pico |
+| Contención | low=50, high=300 | low=10, high=**30** | 75% de capacidad para latencia limpia |
 
 Además:
 - Cleanup entre runs: drena cola + forza kill de conexiones + verifica tablas vacías
@@ -184,19 +182,20 @@ Además:
 |---|---|---|
 | summary1 (legacy) | 2026-06-12 ~06:00 | ❌ Cross-contaminada (experimentos solapados) |
 | summary.json | 20260612_235224 | ⚠️ Solo calibración limpia; todo lo demás contaminado por backlog |
-| latest_summary.json | **20260613_014350** | ✅ **Speedup limpio**, calibración limpia, ratio contención válido |
+| latest_summary.json | **20260613_014350** | ✅ **Speedup limpio**, calibración limpia |
+| **044238** (stress/elast/cont) | **20260613_044238** | ✅ **Contención limpia** (p50=107ms), stress y elasticidad saturados |
 
-### Estado por experimento (sesión 20260613_014350)
+### Estado por experimento
 
-| Experimento | Datos Limpios | Para informe |
-|---|---|---|
-| Calibración rate_10/50 | ✅ Sí | C=9.49 rps, latencia 108ms |
-| **Speedup** | **✅ Válido** | 1→4.81, 2→9.30, 4→17.08, 8→30.46 rps. Eficiencia 100%→79%. |
-| Stress | 🟡 Ajustado | Rampa 10→60 msg/s para ver saturación en ~38 rps |
-| Elasticidad | 🟡 Ajustado | Z(t) 10→50 msg/s para que quepa en 1-20 workers |
-| Contención | 🟡 Ajustado | 10→40 msg/s con 4 workers para ver diferencia hotspot |
+| Experimento | Datos | Sesión | Para informe |
+|---|---|---|---|
+| Calibración rate_10/50 | ✅ **Limpio** | 014350 | C=9.49 rps, latencia 108ms |
+| **Speedup** | ✅ **Limpio** | 014350 | 4.81→9.30→17.08→30.46 rps, eficiencia 100%→79% |
+| **Contención** | ✅ **Limpio** | **044238** | Uniforme 23.48 rps / Hotspot 17.97 rps. Ratio **1.31×**. p50=107ms |
+| **Stress** | 🟡 **Pendiente** | — | 8 workers + max_rate=80. Autoscaler Lambda cada 15s |
+| **Elasticidad** | 🟡 **Pendiente** | — | Lambda 15s + rampa 180s + workers_min=4 |
 
-Con los nuevos valores, stress, elasticidad y contención deberían producir datos limpios o parcialmente limpios (saturación controlada, no backlog desbocado).
+**Resumen para el informe**: calibración, speedup y contención tienen datos limpios y publicables. Stress y elasticidad requieren re-ejecución tras las mejoras del autoscaler (Lambda cada 15s + cooldown).
 
 ---
 

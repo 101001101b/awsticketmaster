@@ -167,7 +167,7 @@ def experiment_speedup(args):
 def experiment_stress(args):
     """C) Stress: increasing load to find saturation point."""
     low_rate = args.min_rate if args.min_rate else 10
-    high_rate = args.max_rate if args.max_rate else 40
+    high_rate = args.max_rate if args.max_rate else 60
     experiment_start = datetime.now(timezone.utc).isoformat()
     log.info("=== Stress test: workers=%d rate=%d->%d (start=%s) ===", args.workers, low_rate, high_rate, experiment_start)
     run_loadgen({
@@ -207,7 +207,7 @@ def experiment_elasticity(args):
         "LOAD_LOW_RATE": str(low_rate),
         "LOAD_HIGH_RATE": str(high_rate),
         "LOAD_T1_LOW_S": "60",
-        "LOAD_T2_RAMP_S": "60",
+        "LOAD_T2_RAMP_S": "180",
         "LOAD_T3_SPIKE_S": "30",
         "LOAD_T4_SUSTAINED_S": "120",
         "LOAD_T5_COOLDOWN_S": "60",
@@ -275,7 +275,7 @@ def main():
     parser.add_argument("--min-rate", type=int, default=0,
                         help="Starting rate for stress (0 = auto: 10 msg/s)")
     parser.add_argument("--max-rate", type=int, default=0,
-                        help="Peak rate for stress (0 = auto: 40 msg/s)")
+                        help="Peak rate for stress (0 = auto: 80 msg/s)")
     parser.add_argument("--workers-min", type=int, default=1)
     parser.add_argument("--workers-max", type=int, default=20)
     parser.add_argument("--elasticity-low", type=int, default=0,

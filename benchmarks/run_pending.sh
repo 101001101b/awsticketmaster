@@ -27,8 +27,11 @@ RESULTS_DIR="./benchmark_results/${RUN_TIMESTAMP}"
 EXPORTS_DIR="./results"
 mkdir -p "$RESULTS_DIR"
 
-echo "Run timestamp: $RUN_TIMESTAMP"
-echo "Results will be saved to: $RESULTS_DIR"
+echo "=========================================="
+echo "AWSTicket - Pending experiments only"
+echo "Timestamp: $RUN_TIMESTAMP"
+echo "Results: $RESULTS_DIR"
+echo "=========================================="
 
 cleanup() {
     echo "=== Cleaning environment ==="
@@ -79,121 +82,65 @@ save_results() {
         echo "Results saved to $dest"
     else
         echo "Warning: No CSV files found in $EXPORTS_DIR"
-        ls -la $EXPORTS_DIR 2>/dev/null || echo "Directory $EXPORTS_DIR does not exist"
     fi
 }
 
-echo "=========================================="
-echo "AWSTicket Experiment Suite"
-echo "=========================================="
-echo "Start time: $(date)"
-echo ""
-
 BASE_OPTS="--pg-host $PG_HOST --pg-user $PG_USER --pg-password $PG_PASSWORD --rabbitmq-host $RABBITMQ_HOST --rabbitmq-user $RABBITMQ_USER --rabbitmq-password $RABBITMQ_PASSWORD"
 
-# ==========================================
-# A) CALIBRATION (1 worker)
-# ==========================================
+# ===== 1) STRESS (rampa 10->80, 8 workers) =====
 echo ""
 echo "=========================================="
-echo "A) CALIBRATION - Measuring worker capacity"
-echo "=========================================="
-scale_workers 1
-
-for rate in 10 50 100; do
-    echo ""
-    echo "--- Calibration: rate=$rate msg/s ---"
-    cleanup
-    PYTHONPATH=../loadgen python3 run_experiment.py --type calibration --rates "$rate" $BASE_OPTS
-    save_results "calibration" "rate_${rate}"
-    echo "Waiting 10s before next run..."
-    sleep 10
-done
-
-# ==========================================
-# B) SPEEDUP (1,2,4,8 workers)
-# ==========================================
-echo ""
-echo "=========================================="
-echo "B) SPEEDUP - Scaling workers"
-echo "=========================================="
-
-for workers in 1 2 4 8; do
-    echo ""
-    echo "--- Speedup: workers=$workers ---"
-    scale_workers "$workers"
-    cleanup
-    PYTHONPATH=../loadgen python3 run_experiment.py --type speedup --workers "$workers" $BASE_OPTS
-    save_results "speedup" "workers_${workers}"
-    echo "Waiting 15s before next run..."
-    sleep 15
-done
-
-# ==========================================
-# C) STRESS (4 workers)
-# ==========================================
-echo ""
-echo "=========================================="
-echo "C) STRESS - Finding saturation point"
+echo "1/5 STRESS - ramp 10->80, 8 workers"
 echo "=========================================="
 scale_workers 8
 cleanup
 PYTHONPATH=../loadgen python3 run_experiment.py --type stress --workers 8 $BASE_OPTS
 save_results "stress" "max_rate_80"
 
-# ==========================================
-# D) ELASTICITY (autoscaling 1->20)
-# ==========================================
+# ===== 2) ELASTICITY run 1 (Z(t) 10->50, min 4 workers, ramp 180s) =====
 echo ""
 echo "=========================================="
-echo "D) ELASTICITY - Z(t) workload with autoscaling"
+echo "2/5 ELASTICITY run 1 - Z(t) 10->50, min 4 workers, ramp 180s"
 echo "=========================================="
 scale_workers 4
+cleanup
+PYTHONPATH=../loadgen python3 run_experiment.py --type elasticity --workers-min 4 --workers-max 20 $BASE_OPTS
+save_results "elasticity" "run_1"
 
-for run in 1 2; do
-    echo ""
-    echo "--- Elasticity: run $run/2 ---"
-    cleanup
-    PYTHONPATH=../loadgen python3 run_experiment.py --type elasticity --workers-min 4 --workers-max 20 $BASE_OPTS
-    save_results "elasticity" "run_${run}"
-    echo "Waiting 20s before next run..."
-    sleep 20
-done
-
-# ==========================================
-# E) CONTENTION (4 workers)
-# ==========================================
+# ===== 3) ELASTICITY run 2 (rampa 180s, min 4 workers) =====
 echo ""
 echo "=========================================="
-echo "E) CONTENTION - Uniform vs Hotspot"
+echo "3/5 ELASTICITY run 2 - Z(t) 10->50, min 4 workers"
+echo "=========================================="
+cleanup
+PYTHONPATH=../loadgen python3 run_experiment.py --type elasticity --workers-min 4 --workers-max 20 $BASE_OPTS
+save_results "elasticity" "run_2"
+
+# ===== 4) CONTENTION uniform (10->30, 4 workers) =====
+echo ""
+echo "=========================================="
+echo "4/5 CONTENTION uniform - 4 workers"
 echo "=========================================="
 scale_workers 4
-
-# Uniform
-echo ""
-echo "--- Contention: Uniform distribution ---"
 cleanup
 PYTHONPATH=../loadgen python3 run_experiment.py --type contention --workers 4 --hotspot-pct 100 --hotspot-traffic 100 $BASE_OPTS
 save_results "contention" "uniform"
 
-# Hotspot 80/5
+# ===== 5) CONTENTION hotspot 80/5 (10->30, 4 workers) =====
 echo ""
-echo "--- Contention: Hotspot 80/5 ---"
+echo "=========================================="
+echo "5/5 CONTENTION hotspot 80/5 - 4 workers"
+echo "=========================================="
 cleanup
 PYTHONPATH=../loadgen python3 run_experiment.py --type contention --workers 4 --hotspot-pct 5 --hotspot-traffic 80 $BASE_OPTS
 save_results "contention" "hotspot_80_5"
 
 echo ""
 echo "=========================================="
-echo "All benchmarks complete!"
+echo "All pending experiments complete!"
+echo "Timestamp: $RUN_TIMESTAMP"
+echo "Results saved to: $RESULTS_DIR"
 echo "=========================================="
-echo "End time: $(date)"
 echo ""
-echo "Results saved to: $RESULTS_DIR/"
-echo ""
-echo "Next steps:"
-echo "1. Generate plots:"
-echo "   cd analysis && python3 plot_results.py --input-dir ../benchmark_results --output-dir ./plots"
-echo ""
-echo "2. Collect summary:"
-echo "   python3 collect_results.py"
+echo "To collect all results:"
+echo "  python3 collect_results.py"
