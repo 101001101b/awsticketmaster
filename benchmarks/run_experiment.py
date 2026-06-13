@@ -131,14 +131,16 @@ def experiment_calibration(args):
 
 def experiment_speedup(args):
     """B) Speedup: vary worker count, measure throughput."""
+    C = 10  # capacidad base por worker (medida en calibración rate_10)
     workers = [int(w) for w in args.workers.split(",")]
     for i, n in enumerate(workers):
+        rate = args.rate if args.rate else n * C // 2  # 50% de capacidad para evitar backlog
         experiment_start = datetime.now(timezone.utc).isoformat()
-        log.info("=== Speedup run %d/%d: workers=%d (start=%s) ===", i + 1, len(workers), n, experiment_start)
+        log.info("=== Speedup run %d/%d: workers=%d rate=%d (start=%s) ===", i + 1, len(workers), n, rate, experiment_start)
         run_loadgen({
             "LOAD_MODE": "numbered",
-            "LOAD_LOW_RATE": str(args.rate),
-            "LOAD_HIGH_RATE": str(args.rate),
+            "LOAD_LOW_RATE": str(rate),
+            "LOAD_HIGH_RATE": str(rate),
             "LOAD_T1_LOW_S": "30",
             "LOAD_T2_RAMP_S": "0",
             "LOAD_T3_SPIKE_S": "0",
@@ -163,12 +165,14 @@ def experiment_speedup(args):
 
 def experiment_stress(args):
     """C) Stress: increasing load to find saturation point."""
+    low_rate = args.min_rate if args.min_rate else 10
+    high_rate = args.max_rate if args.max_rate else 200
     experiment_start = datetime.now(timezone.utc).isoformat()
-    log.info("=== Stress test: workers=%d max-rate=%d (start=%s) ===", args.workers, args.max_rate, experiment_start)
+    log.info("=== Stress test: workers=%d rate=%d->%d (start=%s) ===", args.workers, low_rate, high_rate, experiment_start)
     run_loadgen({
         "LOAD_MODE": "numbered",
-        "LOAD_LOW_RATE": "50",
-        "LOAD_HIGH_RATE": str(args.max_rate),
+        "LOAD_LOW_RATE": str(low_rate),
+        "LOAD_HIGH_RATE": str(high_rate),
         "LOAD_T1_LOW_S": "30",
         "LOAD_T2_RAMP_S": "120",
         "LOAD_T3_SPIKE_S": "10",
@@ -193,12 +197,14 @@ def experiment_stress(args):
 
 def experiment_elasticity(args):
     """D) Elasticity: full Z(t) with autoscaling."""
+    low_rate = args.elasticity_low if args.elasticity_low else 10
+    high_rate = args.elasticity_high if args.elasticity_high else 100
     experiment_start = datetime.now(timezone.utc).isoformat()
-    log.info("=== Elasticity test: Z(t) full (start=%s) ===", experiment_start)
+    log.info("=== Elasticity test: Z(t) low=%d high=%d (start=%s) ===", low_rate, high_rate, experiment_start)
     run_loadgen({
         "LOAD_MODE": "numbered",
-        "LOAD_LOW_RATE": "50",
-        "LOAD_HIGH_RATE": "500",
+        "LOAD_LOW_RATE": str(low_rate),
+        "LOAD_HIGH_RATE": str(high_rate),
         "LOAD_T1_LOW_S": "60",
         "LOAD_T2_RAMP_S": "60",
         "LOAD_T3_SPIKE_S": "30",
@@ -261,10 +267,18 @@ def main():
                         choices=["calibration", "speedup", "stress", "elasticity", "contention"])
     parser.add_argument("--workers", default="1")
     parser.add_argument("--rates", default="10,50,100")
-    parser.add_argument("--rate", type=int, default=300)
-    parser.add_argument("--max-rate", type=int, default=1000)
+    parser.add_argument("--rate", type=int, default=0,
+                        help="Offered load for speedup (0 = auto: workers * C // 2)")
+    parser.add_argument("--min-rate", type=int, default=0,
+                        help="Starting rate for stress (0 = auto: 10 msg/s)")
+    parser.add_argument("--max-rate", type=int, default=0,
+                        help="Peak rate for stress (0 = auto: 200 msg/s)")
     parser.add_argument("--workers-min", type=int, default=1)
     parser.add_argument("--workers-max", type=int, default=20)
+    parser.add_argument("--elasticity-low", type=int, default=0,
+                        help="Low rate for elasticity (0 = auto: 10 msg/s)")
+    parser.add_argument("--elasticity-high", type=int, default=0,
+                        help="High rate for elasticity (0 = auto: 100 msg/s)")
     parser.add_argument("--hotspot-pct", type=float, default=5.0)
     parser.add_argument("--hotspot-traffic", type=float, default=80.0)
     parser.add_argument("--drain-wait", type=int, default=120,

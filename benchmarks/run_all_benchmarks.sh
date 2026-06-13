@@ -112,7 +112,6 @@ for workers in 1 2 4 8; do
     PYTHONPATH=../loadgen python3 run_experiment.py \
         --type speedup \
         --workers "$workers" \
-        --rate 300 \
         --pg-host "$PG_HOST" \
         --pg-user "$PG_USER" \
         --pg-password "$PG_PASSWORD" \

@@ -77,20 +77,52 @@ def calculate_metrics(results_rows):
     return metrics
 
 
+EXPERIMENT_NAMES = {"calibration", "speedup", "stress", "elasticity", "contention"}
+
+
 def collect_benchmarks(input_dir):
     """Collect all benchmark results into structured dict."""
     benchmarks = {}
+    run_timestamps = {}
     
     if not os.path.exists(input_dir):
         print(f"Error: {input_dir} not found")
-        return benchmarks
+        return benchmarks, run_timestamps
     
-    for experiment in sorted(os.listdir(input_dir)):
-        exp_path = os.path.join(input_dir, experiment)
+    # Soporta estructura plana (legacy): benchmark_results/<experiment>/<run>/
+    # y anidada (nueva): benchmark_results/<timestamp>/<experiment>/<run>/
+    entries = sorted(os.listdir(input_dir))
+    
+    # Detectar si es estructura nueva (timestamp) o plana (legacy)
+    is_timestamped = any(
+        os.path.isdir(os.path.join(input_dir, e))
+        and os.path.isdir(os.path.join(input_dir, e, next(iter(EXPERIMENT_NAMES), "")))
+        for e in entries
+    ) if entries else False
+    
+    if is_timestamped:
+        for timestamp in entries:
+            ts_path = os.path.join(input_dir, timestamp)
+            if not os.path.isdir(ts_path):
+                continue
+            _collect_experiments(ts_path, benchmarks, run_timestamps, timestamp)
+    else:
+        _collect_experiments(input_dir, benchmarks, run_timestamps)
+    
+    return benchmarks, run_timestamps
+
+
+def _collect_experiments(base_path, benchmarks, run_timestamps, timestamp=None):
+    for experiment in sorted(os.listdir(base_path)):
+        exp_path = os.path.join(base_path, experiment)
         if not os.path.isdir(exp_path):
             continue
         
-        benchmarks[experiment] = {}
+        if experiment not in EXPERIMENT_NAMES and timestamp is None:
+            continue
+        
+        if experiment not in benchmarks:
+            benchmarks[experiment] = {}
         
         for run in sorted(os.listdir(exp_path)):
             run_path = os.path.join(exp_path, run)
@@ -106,6 +138,9 @@ def collect_benchmarks(input_dir):
             summary_rows = parse_csv(summary_csv)
             throughput_rows = parse_csv(throughput_csv)
             
+            run_key = f"{run}@{timestamp}" if timestamp else run
+            run_timestamps[run_key] = timestamp
+            
             run_data = {
                 'metrics': calculate_metrics(results_rows),
                 'summary': summary_rows,
@@ -118,9 +153,7 @@ def collect_benchmarks(input_dir):
                 }
             }
             
-            benchmarks[experiment][run] = run_data
-    
-    return benchmarks
+            benchmarks[experiment][run_key] = run_data
 
 
 def main():
@@ -134,7 +167,7 @@ def main():
     args = parser.parse_args()
     
     print(f"Collecting benchmarks from {args.input_dir}...")
-    benchmarks = collect_benchmarks(args.input_dir)
+    benchmarks, run_timestamps = collect_benchmarks(args.input_dir)
     
     if not benchmarks:
         print("No benchmarks found")
@@ -150,11 +183,15 @@ def main():
     for exp_name, runs in benchmarks.items():
         total_requests = sum(r['metrics'].get('total_requests', 0) for r in runs.values())
         total_sold = sum(r['metrics'].get('sold', 0) for r in runs.values())
+        run_list = []
+        for run_key in runs:
+            ts = run_timestamps.get(run_key)
+            run_list.append({'name': run_key, 'timestamp': ts})
         output_data['summary'][exp_name] = {
             'num_runs': len(runs),
             'total_requests': total_requests,
             'total_sold': total_sold,
-            'runs': list(runs.keys())
+            'runs': run_list
         }
     
     os.makedirs(os.path.dirname(args.output) or '.', exist_ok=True)
@@ -163,14 +200,22 @@ def main():
     with open(args.output, 'w') as f:
         json.dump(output_data, f, indent=indent, default=str)
     
+    # Agrupar por timestamp para mostrar
+    timestamps_seen = set()
     print(f"\nCollected {len(benchmarks)} experiments:")
     for exp_name, runs in benchmarks.items():
         print(f"  {exp_name}: {len(runs)} runs")
-        for run_name, run_data in runs.items():
+        for run_key, run_data in runs.items():
             m = run_data['metrics']
-            print(f"    {run_name}: {m.get('total_requests', 0)} requests, "
+            ts = run_timestamps.get(run_key, "")
+            timestamps_seen.add(ts) if ts else None
+            ts_label = f" @{ts}" if ts else ""
+            print(f"    {run_key}{ts_label}: {m.get('total_requests', 0)} requests, "
                   f"{m.get('sold', 0)} sold, "
                   f"{m.get('throughput_rps', 0)} req/s")
+    
+    if timestamps_seen:
+        print(f"\nRuns found across {len(timestamps_seen)} session(s): {', '.join(sorted(timestamps_seen, reverse=True))}")
     
     print(f"\nSaved to {args.output}")
 
