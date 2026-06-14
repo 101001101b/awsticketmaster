@@ -177,7 +177,7 @@ def count_processed(pg_conn, request_ids):
         return {}
     with pg_conn.cursor() as cur:
         cur.execute(
-            "SELECT outcome, COUNT(*) FROM processed WHERE request_id::text = ANY(%s) GROUP BY outcome",
+            "SELECT result, COUNT(*) FROM processed WHERE request_id::text = ANY(%s) GROUP BY result",
             (request_ids,),
         )
         return dict(cur.fetchall())
