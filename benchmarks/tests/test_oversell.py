@@ -56,8 +56,8 @@ def _write_summary_csv(output_dir, success, total_sold, total_requests, issues, 
 
 def setup_test_db(conn):
     with conn.cursor() as cur:
-        cur.execute("DELETE FROM results WHERE event_id = %s", (TEST_EVENT_ID,))
-        cur.execute("DELETE FROM processed WHERE request_id LIKE 'test-%%'")
+        cur.execute("DELETE FROM results WHERE request_id::text LIKE 'test-%%'")
+        cur.execute("DELETE FROM processed WHERE request_id::text LIKE 'test-%%'")
         cur.execute("DELETE FROM seats WHERE event_id = %s", (TEST_EVENT_ID,))
 
         cur.execute(
@@ -118,7 +118,7 @@ def verify_no_oversell(conn):
 
         cur.execute(
             """SELECT outcome, COUNT(*) FROM results
-               WHERE request_id LIKE 'test-%%'
+               WHERE request_id::text LIKE 'test-%%'
                GROUP BY outcome ORDER BY outcome"""
         )
         print("\n[DISTRIBUCION DE RESULTADOS]:")
@@ -241,8 +241,8 @@ def run_test(pg_host, pg_port, pg_user, pg_pass, pg_db, output_dir):
     _write_summary_csv(output_dir, len(issues) == 0, total_sold, NUM_REQUESTS, issues, elapsed)
 
     with conn.cursor() as cur:
-        cur.execute("DELETE FROM results WHERE request_id LIKE 'test-%%'")
-        cur.execute("DELETE FROM processed WHERE request_id LIKE 'test-%%'")
+        cur.execute("DELETE FROM results WHERE request_id::text LIKE 'test-%%'")
+        cur.execute("DELETE FROM processed WHERE request_id::text LIKE 'test-%%'")
         cur.execute("DELETE FROM seats WHERE event_id = %s", (TEST_EVENT_ID,))
         cur.execute("DELETE FROM inventory WHERE event_id = %s", (TEST_EVENT_ID,))
         cur.execute("DELETE FROM events WHERE event_id = %s", (TEST_EVENT_ID,))
